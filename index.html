@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Movie Rating Predictor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: #111118;
+            --border: #1e1e2e;
+            --accent: #f5c542;
+            --text: #eeeef5;
+            --muted: #5a5a72;
+            --soft: #1a1a26;
+        }
+ 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 16px;
+            background-image:
+                radial-gradient(ellipse 60% 40% at 10% 0%, rgba(245,197,66,0.06) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 35% at 90% 100%, rgba(255,112,67,0.05) 0%, transparent 55%);
+        }
+ 
+        .wrap { width: 100%; max-width: 520px; }
+ 
+        .hero { text-align: center; margin-bottom: 36px; }
+        .hero .tag {
+            display: inline-block;
+            font-size: 10px; font-weight: 600; letter-spacing: 0.25em;
+            text-transform: uppercase; color: var(--accent);
+            background: rgba(245,197,66,0.08); border: 1px solid rgba(245,197,66,0.2);
+            border-radius: 20px; padding: 4px 14px; margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 48px; font-weight: 900; line-height: 1.05; color: var(--text);
+        }
+        .hero h1 em { font-style: italic; color: var(--accent); }
+        .hero p { margin-top: 10px; font-size: 13px; color: var(--muted); font-weight: 300; }
+ 
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px 28px; }
+ 
+        .section { margin-bottom: 28px; }
+        .section-title {
+            font-size: 10px; font-weight: 600; letter-spacing: 0.2em;
+            text-transform: uppercase; color: var(--muted); margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+ 
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+ 
+        .field label {
+            display: flex; align-items: center; gap-6px;
+            font-size: 11px; font-weight: 500; color: var(--muted);
+            margin-bottom: 6px; letter-spacing: 0.05em; gap: 5px;
+        }
+ 
+        .field input {
+            width: 100%; padding: 11px 14px;
+            background: var(--soft); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text);
+            font-family: 'Outfit', sans-serif; font-size: 15px; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -moz-appearance: textfield;
+        }
+        .field input::-webkit-inner-spin-button,
+        .field input::-webkit-outer-spin-button { -webkit-appearance: none; }
+        .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245,197,66,0.1); }
+        .field input::placeholder { color: #2e2e42; }
+ 
+        /* Tooltip */
+        .tip {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 14px; height: 14px; border-radius: 50%;
+            background: var(--border); color: var(--muted);
+            font-size: 9px; font-weight: 700; cursor: default;
+            position: relative;
+        }
+        .tip:hover::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e1e30;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 400;
+            letter-spacing: 0;
+            text-transform: none;
+            white-space: nowrap;
+            padding: 6px 10px;
+            border-radius: 6px;
+            z-index: 10;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+        .tip:hover::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 1px);
+            left: 50%; transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: var(--border);
+            z-index: 11;
+        }
+ 
+        /* Genre chips */
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip {
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 14px; background: var(--soft);
+            border: 1px solid var(--border); border-radius: 999px;
+            font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
+            color: var(--muted); cursor: pointer; transition: all 0.18s; user-select: none;
+        }
+        .chip:hover { border-color: rgba(245,197,66,0.4); color: var(--text); }
+        .chip.active { background: rgba(245,197,66,0.12); border-color: var(--accent); color: var(--accent); }
+        .chip .icon { font-size: 14px; }
+ 
+        /* Language toggle */
+        .lang-row { display: flex; gap: 10px; }
+        .lang-btn {
+            flex: 1; padding: 10px; background: var(--soft);
+            border: 1px solid var(--border); border-radius: 8px;
+            font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
+            color: var(--muted); cursor: pointer; text-align: center; transition: all 0.18s;
+        }
+        .lang-btn.active { background: rgba(245,197,66,0.12); border-color: var(--accent); color: var(--accent); }
+ 
+        /* Submit */
+        .btn-predict {
+            width: 100%; margin-top: 8px; padding: 15px;
+            background: var(--accent); color: #0a0a0f; border: none; border-radius: 10px;
+            font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700;
+            cursor: pointer; letter-spacing: 0.03em;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+        .btn-predict:hover { background: #f8d153; box-shadow: 0 6px 24px rgba(245,197,66,0.3); transform: translateY(-1px); }
+        .btn-predict:active { transform: translateY(0); }
+ 
+        /* Result */
+        #result { margin-top: 20px; padding: 20px; border-radius: 10px; display: none; text-align: center; }
+        .success { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.2); }
+        .success .stars { font-size: 22px; margin-bottom: 8px; letter-spacing: 2px; }
+        .success .rating-num { font-family: 'Playfair Display', serif; font-size: 60px; font-weight: 900; color: #4ade80; line-height: 1; }
+        .success .rating-sub { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(74,222,128,0.5); margin-top: 4px; }
+        .error { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.2); color: #f87171; font-size: 13px; }
+ 
+        /* Loader */
+        #loader {
+            position: fixed; inset: 0;
+            background: var(--bg);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 999;
+            transition: opacity 0.4s;
+        }
+        #loader .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #loader p { margin-top: 16px; font-size: 13px; color: var(--muted); }
+    </style>
+</head>
+<body>
+ 
+<div id="loader">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+</div>
+ 
+ 
+<div class="wrap">
+ 
+    <div class="hero">
+        <div class="tag">ML · Random Forest</div>
+        <h1>Predict a<br><em>Movie Rating</em></h1>
+        <p>Fill in the film's details and get an instant IMDb-style score.</p>
+    </div>
+ 
+    <div class="card">
+ 
+        <div class="section">
+            <div class="section-title">Film Details</div>
+            <div class="row2">
+ 
+                <div class="field">
+                    <label>Title Length
+                        <span class="tip" data-tip="Number of characters in the movie title. e.g. 'Inception' = 9">?</span>
+                    </label>
+                    <input type="number" id="title_length" placeholder="" required>
+                </div>
+ 
+                <div class="field">
+                    <label>Runtime (min)
+                        <span class="tip" data-tip="Duration in minutes. Must be between 60 and 300.">?</span>
+                    </label>
+                    <input type="number" id="runtimeMinutes" placeholder="" min="60" max="300" required>
+                </div>
+ 
+                <div class="field">
+                    <label>Movie Age (years)
+                        <span class="tip" data-tip="Years since release. e.g. a 2010 film = 16 years in 2026.">?</span>
+                    </label>
+                    <input type="number" id="movie_age" placeholder="" required>
+                </div>
+ 
+                <div class="field">
+                    <label>Number of Genres
+                        <span class="tip" data-tip="Total genres for this film. e.g. Action, Drama, Thriller = 3.">?</span>
+                    </label>
+                    <input type="number" id="genre_count" placeholder="" min="0" required>
+                </div>
+ 
+            </div>
+        </div>
+ 
+        <div class="section">
+            <div class="section-title">Genres</div>
+            <div class="chips">
+                <div class="chip" data-genre="is_drama"><span class="icon">🎭</span> Drama</div>
+                <div class="chip" data-genre="is_comedy"><span class="icon">😂</span> Comedy</div>
+                <div class="chip" data-genre="is_action"><span class="icon">💥</span> Action</div>
+                <div class="chip" data-genre="is_thriller"><span class="icon">😰</span> Thriller</div>
+                <div class="chip" data-genre="is_horror"><span class="icon">👻</span> Horror</div>
+                <div class="chip" data-genre="is_romance"><span class="icon">❤️</span> Romance</div>
+                <div class="chip" data-genre="is_crime"><span class="icon">🔍</span> Crime</div>
+                <div class="chip" data-genre="is_documentary"><span class="icon">🎥</span> Documentary</div>
+            </div>
+        </div>
+ 
+        <div class="section">
+            <div class="section-title">Language</div>
+            <div class="lang-row">
+                <button type="button" class="lang-btn active" data-val="1">English</button>
+                <button type="button" class="lang-btn" data-val="0">🌍 Other</button>
+            </div>
+        </div>
+ 
+        <button class="btn-predict" id="submitBtn">Predict Rating →</button>
+        <div id="result"></div>
+    </div>
+</div>
+ 
+<script>
+ 
+    window.addEventListener('load', () => {
+        const l = document.getElementById('loader');
+        l.style.opacity = '0';
+        setTimeout(() => l.style.display = 'none', 400);
+    });
+ 
+    document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => chip.classList.toggle('active'));
+    });
+ 
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+ 
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'none';
+ 
+        const genreMap = {
+            is_drama: 0, is_comedy: 0, is_action: 0, is_thriller: 0,
+            is_horror: 0, is_romance: 0, is_crime: 0, is_documentary: 0
+        };
+        document.querySelectorAll('.chip.active').forEach(c => {
+            genreMap[c.dataset.genre] = 1;
+        });
+ 
+        const is_english = parseInt(document.querySelector('.lang-btn.active').dataset.val);
+ 
+        const formData = {
+            runtimeMinutes: parseFloat(document.getElementById('runtimeMinutes').value),
+            movie_age:      parseFloat(document.getElementById('movie_age').value),
+            title_length:   parseFloat(document.getElementById('title_length').value),
+            genre_count:    parseFloat(document.getElementById('genre_count').value),
+            ...genreMap,
+            is_english
+        };
+ 
+        for (const [k, v] of Object.entries(formData)) {
+            if (isNaN(v)) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = '⚠ Please fill in all numeric fields.';
+                resultDiv.style.display = 'block';
+                return;
+            }
+        }
+ 
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+ 
+            const data = await response.json();
+ 
+            if (response.ok) {
+                const rating = data.predicted_rating.toFixed(1);
+                const filled = Math.round(rating / 2);
+                const stars = '★'.repeat(filled) + '☆'.repeat(5 - filled);
+                resultDiv.className = 'success';
+                resultDiv.innerHTML = `
+                    <div class="stars">${stars}</div>
+                    <div class="rating-num">${rating}</div>
+                    <div class="rating-sub">Predicted IMDb Rating / 10</div>
+                `;
+            } else {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `⚠ ${data.error || 'Invalid request'}`;
+            }
+        } catch (err) {
+            resultDiv.className = 'error';
+            resultDiv.innerHTML = '⚠ Unable to connect to the server.';
+        }
+ 
+        resultDiv.style.display = 'block';
+    });
+</script>
+ 
+</body>
+</html>
